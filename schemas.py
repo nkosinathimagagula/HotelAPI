@@ -23,7 +23,7 @@ class RoomBase(BaseModel):
     number_of_bedrooms: int
     bed_type: str
     occupancy_limit: int
-    ammenities: list[str]
+    ammenities: str
     status: str
     price: float
 

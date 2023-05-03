@@ -23,7 +23,7 @@ class Room(Base):
     number_of_bedrooms = Column(Integer)
     bed_type = Column(String)
     occupancy_limit = Column(Integer)
-    ammenities = Column(list[str])
+    ammenities = Column(String)
     status = Column(String)
     price = Column(Float)
 

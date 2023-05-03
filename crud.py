@@ -45,3 +45,7 @@ def get_rooms_by_status(db: Session, status: str):
     return db.query(models.Room).filter(status=status).all()
 
 # price
+
+
+def get_booking_info(db: Session, reference: str):
+    return db.query(models.Booking).filter(reference=reference).first()

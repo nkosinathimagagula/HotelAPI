@@ -53,7 +53,21 @@ def get_rooms(db: Session = Depends(get_db), room_number: str | None = None, flo
     rooms = crud.get_rooms_by_filter(db=db, filter=filter)
     return rooms
 
+@app.put('/api/hotel/rooms/{room_number}', response_model=schemas.Room)
+def update_room_price(room_number: str, price: str, db: Session = Depends(get_db)):
+    room = crud.get_room_by_room_number(db=db, room_number=room_number)
+    return crud.update_room_info(db=db, room_id=room.id, value_to_update={"price": price})
+
+@app.put('/api.hotel/rooms/check-out/{reference}', response_model=schemas.Room)
+def update_room(reference: str, db:Session = Depends(get_db)):
+    booking = crud.get_booking(db=db, reference=reference)
+    return crud.update_room_info(db=db, room_id=booking.room_id, value_to_update={"status": "available"})
+
+
 
 @app.post('/api/hotel/bookings/', response_model=schemas.Booking)
 def create_booking(booking: schemas.BookingBase, db: Session = Depends(get_db)):
     return crud.create_booking(db, booking=booking)
+
+
+

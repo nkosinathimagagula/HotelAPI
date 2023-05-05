@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date, Float, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, DATETIME, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from enum import Enum
 
 
 class User(Base):
@@ -33,7 +34,7 @@ class Booking(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     reference = Column(String, unique=True)
-    booking_date = Column(Date)
+    booking_date = Column(DATETIME)
     check_in_date = Column(Date)
     check_out_date = Column(Date)
     price = Column(Float)
@@ -44,3 +45,8 @@ class Booking(Base):
 
 # reviews 
 
+
+
+class Status(str, Enum):
+    available = "Available"
+    Booked = "Booked"

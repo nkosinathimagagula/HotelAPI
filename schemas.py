@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime, date
 
 
@@ -41,8 +41,8 @@ class BookingBase(BaseModel):
     check_out_date: date
     price: float
 
-    customer_id: int
-    room_id: int
+    customer_id: int = Field(gt=0, description="The customer id must be greater than 0")
+    room_id: int = Field(gt=0, description="The room id must be greater tha 0")
 
 
 class Booking(BookingBase):

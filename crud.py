@@ -83,25 +83,39 @@ def get_rooms_by_filter(db: Session, filter: dict):
 
     return db.query(models.Room).all()
 
+def update_room_info(db: Session, room_id: int, value_to_update: dict):
+    key = list(value_to_update.keys())[0]
+    value = value_to_update[key]
+
+    db_room = db.query(models.Room).filter(models.Room.id == room_id).first()
+    setattr(db_room, key, value)
+    db.commit()
+    db.refresh(db_room)
+    return db_room
+
 # price
 
 
+def get_booking(db: Session, reference: str):
+    return db.query(models.Booking).filter(models.Booking.reference == reference).first()
+
 def create_booking(db: Session, booking: schemas.BookingBase):
     room = db.query(models.Room).filter(models.Room.id == booking.room_id).first()
-    reference = createReferenceNumber(room_number=room.room_number)
-    db_booking = models.Booking(
-        reference=reference, 
-        booking_date=datetime.now(), 
-        check_in_date=booking.check_in_date,
-        check_out_date=booking.check_out_date,
-        price=booking.price, 
-        customer_id=booking.customer_id, 
-        room_id=booking.room_id
-    )
-    room.status = 'booked'
-    db.add(db_booking)
-    db.commit()
-    db.refresh(db_booking)
+    if room.status == 'available':
+        reference = createReferenceNumber(room_number=room.room_number)
+        db_booking = models.Booking(
+            reference=reference, 
+            booking_date=datetime.now(), 
+            check_in_date=booking.check_in_date,
+            check_out_date=booking.check_out_date,
+            price=booking.price, 
+            customer_id=booking.customer_id, 
+            room_id=booking.room_id
+        )
+        room.status = 'booked'
+        db.add(db_booking)
+        db.commit()
+        db.refresh(db_booking)
     return db_booking
     
 def get_booking_info(db: Session, reference: str):

@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, date
+from utils import createReferenceNumber
 import models, schemas
 
 
@@ -30,22 +32,77 @@ def get_rooms(db: Session):
     return db.query(models.Room).all()
 
 def get_room_by_room_number(db: Session, room_number: str):
-    return db.query(models.Room).filter(room_number=room_number).first()
+    return db.query(models.Room).filter(models.Room.room_number == room_number).first()
 
 def get_rooms_by_floor(db: Session, floor_number: int):
-    return db.query(models.Room).filter(floor_number=floor_number).all()
+    return db.query(models.Room).filter(models.Room.floor == floor_number).all()
 
 def get_rooms_by_number_of_bedrooms(db: Session, number_of_bedrooms: int):
-    return db.query(models.Room).filter(number_of_bedrooms=number_of_bedrooms).all()
+    return db.query(models.Room).filter(models.Room.number_of_bedrooms == number_of_bedrooms).all()
 
 def get_rooms_by_occupancy_limit(db: Session, occupancy_limit: int):
-    return db.query(models.Room).filter(occupancy_limit=occupancy_limit).all()
+    return db.query(models.Room).filter(models.Room.occupancy_limit == occupancy_limit).all()
 
 def get_rooms_by_status(db: Session, status: str):
-    return db.query(models.Room).filter(status=status).all()
+    return db.query(models.Room).filter(models.Room.status == status).all()
+
+def get_rooms_by_filter(db: Session, filter: dict):
+    if filter:
+        keys = list(filter.keys())
+
+        if len(keys) == 1:
+            return db.query(models.Room).filter(
+                models.Room.__dict__[keys[0]] == filter[keys[0]]
+            ).all()
+        elif len(keys) == 2:
+            return db.query(models.Room).filter(
+                models.Room.__dict__[keys[0]] == filter[keys[0]], 
+                models.Room.__dict__[keys[1]] == filter[keys[1]]
+            ).all()
+        elif len(keys) == 3:
+            return db.query(models.Room).filter(
+                models.Room.__dict__[keys[0]] == filter[keys[0]], 
+                models.Room.__dict__[keys[1]] == filter[keys[1]], 
+                models.Room.__dict__[keys[2]] == filter[keys[2]]
+            ).all()
+        elif len(keys) == 4:
+            return db.query(models.Room).filter(
+                models.Room.__dict__[keys[0]] == filter[keys[0]], 
+                models.Room.__dict__[keys[1]] == filter[keys[1]], 
+                models.Room.__dict__[keys[2]] == filter[keys[2]], 
+                models.Room.__dict__[keys[3]] == filter[keys[3]]
+            ).all()
+        
+        return db.query(models.Room).filter(
+            models.Room.__dict__[keys[0]] == filter[keys[0]], 
+            models.Room.__dict__[keys[1]] == filter[keys[1]], 
+            models.Room.__dict__[keys[2]] == filter[keys[2]], 
+            models.Room.__dict__[keys[3]] == filter[keys[3]], 
+            models.Room.__dict__[keys[4]] == filter[keys[4]]
+        ).all()
+
+    return db.query(models.Room).all()
 
 # price
 
 
+def create_booking(db: Session, booking: schemas.BookingBase):
+    room = db.query(models.Room).filter(models.Room.id == booking.room_id).first()
+    reference = createReferenceNumber(room_number=room.room_number)
+    db_booking = models.Booking(
+        reference=reference, 
+        booking_date=datetime.now(), 
+        check_in_date=booking.check_in_date,
+        check_out_date=booking.check_out_date,
+        price=booking.price, 
+        customer_id=booking.customer_id, 
+        room_id=booking.room_id
+    )
+    room.status = 'booked'
+    db.add(db_booking)
+    db.commit()
+    db.refresh(db_booking)
+    return db_booking
+    
 def get_booking_info(db: Session, reference: str):
-    return db.query(models.Booking).filter(reference=reference).first()
+    return db.query(models.Booking).filter(models.Booking.reference == reference).first()

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 
 
 class UserBase(BaseModel):
@@ -37,11 +37,8 @@ class Room(RoomBase):
 
 
 class BookingBase(BaseModel):
-    reference: str
-    booking_date: datetime
-    booking_date: datetime
-    check_in_date: datetime
-    check_out_date: datetime
+    check_in_date: date
+    check_out_date: date
     price: float
 
     customer_id: int
@@ -50,6 +47,8 @@ class BookingBase(BaseModel):
 
 class Booking(BookingBase):
     id: int
+    reference: str
+    booking_date: datetime
 
     class Config:
         orm_mode = True

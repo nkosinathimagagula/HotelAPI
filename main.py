@@ -45,7 +45,7 @@ def get_rooms(db: Session = Depends(get_db), room_number: str | None = None, flo
         "floor": floor,
         "number_of_bedrooms": number_of_bedrooms, 
         "occupancy_limit": occupancy_limit,
-        "status": status.lower()
+        "status": status.lower() if status is not None else status
     }
 
     filter = query_filter(query)

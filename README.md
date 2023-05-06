@@ -8,5 +8,8 @@ Building a RESTful backend API for a Hotel web application using FastAPI framewo
 * pip install SQLAlchemy
 * pip freeze > requirements.txt
 
+for OAUTH2
+* pip install python-multipart
+
 ### Installing all the packages for this project
 * pip install -r requirements.txt

@@ -13,5 +13,9 @@ for OAUTH2
 * pip install 'python-jose[cryptography]'
 * pip install 'passlib[bcrypt]'
 
+for testing
+* pip install httpx
+* pip install pytest
+
 ### Installing all the packages for this project
 * pip install -r requirements.txt

@@ -10,6 +10,8 @@ Building a RESTful backend API for a Hotel web application using FastAPI framewo
 
 for OAUTH2
 * pip install python-multipart
+* pip install 'python-jose[cryptography]'
+* pip install 'passlib[bcrypt]'
 
 ### Installing all the packages for this project
 * pip install -r requirements.txt

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, date
 from utils import createReferenceNumber
-import models, schemas
+import models, schemas, security
 
 
 def get_user_by_email(db: Session, email: str):
@@ -14,7 +14,8 @@ def get_users(db: Session):
 
 
 def create_user(db: Session, user: schemas.UserBase):
-    db_user = models.User(firstname=user.firstname, lastname=user.lastname, email=user.email, phone_number=user.phone_number, password=user.password)
+    hashed_password = security.get_password_hash(password=user.password)
+    db_user = models.User(firstname=user.firstname, lastname=user.lastname, email=user.email, phone_number=user.phone_number, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, date
+from enum import Enum
 
 
 class UserBase(BaseModel):
@@ -52,3 +53,13 @@ class Booking(BookingBase):
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class Status(str, Enum):
+    available = "Available"
+    Booked = "Booked"

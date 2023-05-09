@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
@@ -82,7 +82,7 @@ def get_current_user(db: Session, token: Annotated[str, Depends(oath2_scheme)]):
     return user
 
 
-def validate_user(db: Session, token: str):
+def validate_token(db: Session, token: str):
     user = get_current_user(db=db, token=token)
     
     if not user:
@@ -93,3 +93,15 @@ def validate_user(db: Session, token: str):
         )
     
     # return user
+    
+
+def validate_admin_token(db: Session, token: str):
+    user = get_current_user(db=db, token=token)
+    admin = user.admin_access
+    
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin token",
+            headers={"WWW_Authenticate": "Bearer"}
+        )

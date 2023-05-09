@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     email: str
     phone_number: str
     password: str
+    admin_access: bool = False
 
 
 class User(UserBase):

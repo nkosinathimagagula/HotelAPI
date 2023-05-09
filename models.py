@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date, DATETIME, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, DATETIME, Float, Boolean, ForeignKey
 from database import Base
-from enum import Enum
 
 class User(Base):
     __tablename__ = "users"
@@ -11,6 +10,7 @@ class User(Base):
     email = Column(String, unique=True)
     password = Column(String)
     phone_number = Column(String)
+    admin_access = Column(Boolean, default=False)
 
 
 class Room(Base):

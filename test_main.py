@@ -123,7 +123,7 @@ def test_create_user_for_email_already_registered():
 def test_get_users_for_admin():
     response = client.get(
         '/api/users',
-        headers={"token": current_test_token_for_admin["token"], "type": "bearer"}
+        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"}
     )
     
     data = response.json()
@@ -136,7 +136,7 @@ def test_get_users_for_admin():
 def test_get_users_for_user():
     response = client.get(
         '/api/users',
-        headers={"token": current_test_token_for_user["token"], "type": "bearer"}
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
     )
     
     data = response.json()

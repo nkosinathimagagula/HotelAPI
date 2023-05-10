@@ -55,7 +55,7 @@ def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 @app.get('/api/users/', response_model=list[schemas.User])
-def read_users(token: Annotated[str, Depends(get_token_header)], db: Session = Depends(get_db)):
+def read_users(token: Annotated[str, Depends(get_token_header(security.oath2_scheme))], db: Session = Depends(get_db)):
     security.validate_admin_token(db=db, token=token)
     
     users = crud.get_users(db=db)

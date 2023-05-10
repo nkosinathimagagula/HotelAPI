@@ -25,11 +25,13 @@ app.dependency_overrides[get_db] = overide_get_db
 
 client = TestClient(app)
 
+current_test_token_for_user = {"token": ''}
+current_test_token_for_admin = {"token": ''}
 
-def test_generate_access_token():
+def test_generate_access_token_for_user():
     response = client.post(
         '/token', 
-        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"}, 
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
         headers={"content-type": "application/x-www-form-urlencoded"}
     )
     
@@ -38,6 +40,24 @@ def test_generate_access_token():
     assert response.status_code == status.HTTP_200_OK
     assert type(data["access_token"]) == str
     assert data["token_type"] == "bearer"
+    
+    current_test_token_for_user["token"] = data["access_token"]
+
+
+def test_generate_access_token_for_admin():
+    response = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data["access_token"]) == str
+    assert data["token_type"] == "bearer"
+    
+    current_test_token_for_admin["token"] = data["access_token"]
 
 
 def test_generate_access_token_for_non_user():
@@ -98,3 +118,28 @@ def test_create_user_for_email_already_registered():
     
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert data["detail"] == "Email already registered!"
+    
+
+def test_get_users_for_admin():
+    response = client.get(
+        '/api/users',
+        headers={"token": current_test_token_for_admin["token"], "type": "bearer"}
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data) == list
+    assert list(data[0].keys()) == ["firstname", "lastname", "email", "phone_number", "password", "admin_access", "id"]
+
+
+def test_get_users_for_user():
+    response = client.get(
+        '/api/users',
+        headers={"token": current_test_token_for_user["token"], "type": "bearer"}
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert data["detail"] == "Invalid admin token"

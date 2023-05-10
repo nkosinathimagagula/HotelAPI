@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -11,7 +11,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency
+## Start of Dependencies
 def get_db():
     db = SessionLocal()
 
@@ -19,6 +19,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def get_token_header(token: Annotated[str, Header()]):
+    return token
+## end of Dependencies
     
 
 # login
@@ -51,7 +55,7 @@ def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 @app.get('/api/users/', response_model=list[schemas.User])
-def read_users(token: Annotated[str, Depends(security.oath2_scheme)], db: Session = Depends(get_db)):
+def read_users(token: Annotated[str, Depends(get_token_header)], db: Session = Depends(get_db)):
     security.validate_admin_token(db=db, token=token)
     
     users = crud.get_users(db=db)

@@ -100,6 +100,7 @@ def test_create_user():
     created_user = db.query(models.User).filter(models.User.email == 'unit@testing.com').first()
     db.delete(created_user)
     db.commit()
+    db.close()
     
     
 def test_create_user_for_email_already_registered():
@@ -143,3 +144,86 @@ def test_get_users_for_user():
     
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data["detail"] == "Invalid admin token"
+
+
+def test_add_room_for_admin():
+    response = client.post(
+        '/api/hotel/rooms/',
+        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        json={
+            "room_number": "AP0001",
+            "floor": 0,
+            "number_of_bedrooms": 3,
+            "bed_type": "single, single, double",
+            "occupancy_limit": 4,
+            "ammenities": "amenity1, amenity2, amenity3",
+            "status": 'available',
+            "price": 600.00,
+        }
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert data['room_number'] == "AP0001"
+    assert data['floor'] == 0
+    assert data['number_of_bedrooms'] == 3
+    assert data['bed_type'] == "single, single, double"
+    assert data['occupancy_limit'] == 4
+    assert data['ammenities'] == 'amenity1, amenity2, amenity3'
+    assert data['status'] == "available"
+    assert data['price'] == 600.00
+    
+
+def test_add_room_for_admin_when_adding_existing_room():
+    response = client.post(
+        '/api/hotel/rooms/',
+        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        json={
+            "room_number": "AP0001",
+            "floor": 0,
+            "number_of_bedrooms": 3,
+            "bed_type": "single, single, double",
+            "occupancy_limit": 4,
+            "ammenities": "amenity1, amenity2, amenity3",
+            "status": 'available',
+            "price": 600.00,
+        }
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert data['detail'] == "Room AP0001 already added!"
+    
+    
+    
+    # DELETE THE ROOM CREATED IN THE DATABASE (might need it later...)
+    db = TestingSessionLocal()
+    added_room = db.query(models.Room).filter(models.Room.room_number == 'AP0001').first()
+    db.delete(added_room)
+    db.commit()
+    db.close()
+
+
+def test_add_room_for_user():
+    response = client.post(
+        '/api/hotel/rooms/',
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"},
+        json={
+            "room_number": "AP0001",
+            "floor": 0,
+            "number_of_bedrooms": 3,
+            "bed_type": "single, single, double",
+            "occupancy_limit": 4,
+            "ammenities": "amenity1, amenity2, amenity3",
+            "status": 'available',
+            "price": 600.00,
+        }
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert data['detail'] == "Invalid admin token"
+

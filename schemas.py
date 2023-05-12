@@ -64,3 +64,6 @@ class Token(BaseModel):
 class Status(str, Enum):
     available = "Available"
     Booked = "Booked"
+
+class PriceUpdate(BaseModel):
+    price: float

@@ -117,6 +117,7 @@ def create_booking(db: Session, booking: schemas.BookingBase):
         db.add(db_booking)
         db.commit()
         db.refresh(db_booking)
+        
     return db_booking
     
 def get_booking_info(db: Session, reference: str):

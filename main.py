@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Header, HTTPException, status
+from fastapi import FastAPI, Depends, Body, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -63,7 +63,7 @@ def read_users(token: Annotated[str, Depends(get_token_header(security.oath2_sch
 
 
 @app.post('/api/hotel/rooms/', response_model=schemas.Room)
-def add_room(token: Annotated[str, Depends(security.oath2_scheme)], room: schemas.RoomBase, db: Session = Depends(get_db)):
+def add_room(token: Annotated[str, Depends(get_token_header(security.oath2_scheme))], room: schemas.RoomBase, db: Session = Depends(get_db)):
     security.validate_admin_token(db=db, token=token)
     
     db_room = crud.get_room_by_room_number(db=db, room_number=room.room_number)
@@ -73,7 +73,7 @@ def add_room(token: Annotated[str, Depends(security.oath2_scheme)], room: schema
 
 @app.get('/api/hotel/rooms/', response_model=list[schemas.Room])
 def get_rooms(
-    token: Annotated[str, Depends(security.oath2_scheme)],
+    token: Annotated[str,  Depends(get_token_header(security.oath2_scheme))],
     db: Session = Depends(get_db), 
     room_number: str | None = None, 
     floor: int | None = None, 
@@ -97,14 +97,14 @@ def get_rooms(
     return rooms
 
 @app.put('/api/hotel/rooms/{room_number}', response_model=schemas.Room)
-def update_room_price(room_number: str, price: str, token: Annotated[str, Depends(security.oath2_scheme)], db: Session = Depends(get_db)):
+def update_room_price(room_number: str, price: Annotated[schemas.PriceUpdate, Body()], token: Annotated[str, Depends(get_token_header(security.oath2_scheme))], db: Session = Depends(get_db)):
     security.validate_admin_token(db=db, token=token)
     
     room = crud.get_room_by_room_number(db=db, room_number=room_number)
-    return crud.update_room_info(db=db, room_id=room.id, value_to_update={"price": price})
+    return crud.update_room_info(db=db, room_id=room.id, value_to_update=price.dict())
 
 @app.put('/api/hotel/rooms/check-out/{reference}', response_model=schemas.Room)
-def update_room(token: Annotated[str, Depends(security.oath2_scheme)], reference: str, db:Session = Depends(get_db)):
+def update_room(token: Annotated[str, Depends(get_token_header(security.oath2_scheme))], reference: str, db:Session = Depends(get_db)):
     security.validate_token(db=db, token=token)
     
     booking = crud.get_booking(db=db, reference=reference)
@@ -113,8 +113,7 @@ def update_room(token: Annotated[str, Depends(security.oath2_scheme)], reference
 
 
 @app.post('/api/hotel/bookings/', response_model=schemas.Booking)
-def create_booking(token: Annotated[str, Depends(security.oath2_scheme)], booking: schemas.BookingBase, db: Session = Depends(get_db)):
+def create_booking(token: Annotated[str, Depends(get_token_header(security.oath2_scheme))], booking: Annotated[schemas.BookingBase, Body()], db: Session = Depends(get_db)):
     security.validate_token(db=db, token=token)
         
     return crud.create_booking(db, booking=booking)
-    

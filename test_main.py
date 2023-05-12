@@ -227,3 +227,39 @@ def test_add_room_for_user():
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Invalid admin token"
 
+
+
+def test_get_rooms():
+    response = client.get(
+        '/api/hotel/rooms/',
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+    )
+    
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data) == list
+    
+
+def test_get_rooms_with_query_filters():
+    response = client.get(
+        '/api/hotel/rooms/?status=Available&floor=1',
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+    )
+    
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data) == list
+    
+
+def test_get_rooms_with_all_query_filters():
+    response = client.get(
+        '/api/hotel/rooms/?room_number=AP1102&floor=1&number_of_bedrooms=2&occupancy_limit=4&status=Available',
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+    )
+    
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data) == list

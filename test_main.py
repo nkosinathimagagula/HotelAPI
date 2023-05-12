@@ -27,6 +27,7 @@ client = TestClient(app)
 
 current_test_token_for_user = {"token": ''}
 current_test_token_for_admin = {"token": ''}
+current_booking = {"reference": ''}
 
 def test_generate_access_token_for_user():
     response = client.post(
@@ -278,3 +279,45 @@ def test_update_room_price():
     assert data['floor'] == 1
     assert data['price'] == 20.00
     
+
+def test_create_booking():
+    response = client.post(
+        '/api/hotel/bookings/',
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"},
+        json={
+            "check_in_date": "2023-08-10",
+            "check_out_date": "2023-08-15",
+            "price": 900,
+            "customer_id": 2,
+            "room_id": 7
+        }
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert type(data['reference']) == str
+    
+    
+    current_booking['reference'] = data['reference']
+    
+    
+
+def test_update_room():
+    response = client.put(
+        f"/api/hotel/rooms/check-out/{current_booking['reference']}",
+        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+    )
+    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert data['status'] == "available"
+    
+    
+    # DELETE THE BOOKING CREATED IN THE DATABASE
+    db = TestingSessionLocal()
+    created_booking = db.query(models.Booking).filter(models.Booking.reference == current_booking['reference']).first()
+    db.delete(created_booking)
+    db.commit()
+    db.close()

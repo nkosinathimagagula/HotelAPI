@@ -263,3 +263,18 @@ def test_get_rooms_with_all_query_filters():
 
     assert response.status_code == status.HTTP_200_OK
     assert type(data) == list
+    
+    
+def test_update_room_price():
+    response = client.put(
+        '/api/hotel/rooms/AP1101',
+        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        json={"price": 20.00}
+    )    
+    data = response.json()
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert data['room_number'] == "AP1101"
+    assert data['floor'] == 1
+    assert data['price'] == 20.00
+    

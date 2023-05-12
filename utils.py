@@ -11,6 +11,6 @@ def query_filter(query_dictionary):
 
 
 def createReferenceNumber(room_number):
-    chars = room_number[0:2] + room_number[-1]
+    chars = room_number[0] + room_number[2] + room_number[-1]
     rand = chars.join(choices(ascii_letters, k=2)) + ''.join(choices(hexdigits + digits, k=8))
     return rand.upper()

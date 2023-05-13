@@ -14,20 +14,19 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 Base.metadata.create_all(bind=engine)
 
+
 def overide_get_db():
     try:
         db = TestingSessionLocal()
         yield db
     finally:
         db.close()
+
     
 app.dependency_overrides[get_db] = overide_get_db
 
 client = TestClient(app)
 
-current_test_token_for_user = {"token": ''}
-current_test_token_for_admin = {"token": ''}
-current_booking = {"reference": ''}
 
 def test_generate_access_token_for_user():
     response = client.post(
@@ -41,8 +40,6 @@ def test_generate_access_token_for_user():
     assert response.status_code == status.HTTP_200_OK
     assert type(data["access_token"]) == str
     assert data["token_type"] == "bearer"
-    
-    current_test_token_for_user["token"] = data["access_token"]
 
 
 def test_generate_access_token_for_admin():
@@ -57,8 +54,6 @@ def test_generate_access_token_for_admin():
     assert response.status_code == status.HTTP_200_OK
     assert type(data["access_token"]) == str
     assert data["token_type"] == "bearer"
-    
-    current_test_token_for_admin["token"] = data["access_token"]
 
 
 def test_generate_access_token_for_non_user():
@@ -123,9 +118,15 @@ def test_create_user_for_email_already_registered():
     
 
 def test_get_users_for_admin():
+    admin_token = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.get(
         '/api/users',
-        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"}
+        headers={"Authorization": f"bearer {admin_token}"}
     )
     
     data = response.json()
@@ -136,9 +137,15 @@ def test_get_users_for_admin():
 
 
 def test_get_users_for_user():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.get(
         '/api/users',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+        headers={"Authorization": f"bearer {user_token}"}
     )
     
     data = response.json()
@@ -148,9 +155,15 @@ def test_get_users_for_user():
 
 
 def test_add_room_for_admin():
+    admin_token = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.post(
         '/api/hotel/rooms/',
-        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        headers={"Authorization": f"bearer {admin_token}"},
         json={
             "room_number": "AP0001",
             "floor": 0,
@@ -177,9 +190,15 @@ def test_add_room_for_admin():
     
 
 def test_add_room_for_admin_when_adding_existing_room():
+    admin_token = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.post(
         '/api/hotel/rooms/',
-        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        headers={"Authorization": f"bearer {admin_token}"},
         json={
             "room_number": "AP0001",
             "floor": 0,
@@ -208,9 +227,15 @@ def test_add_room_for_admin_when_adding_existing_room():
 
 
 def test_add_room_for_user():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.post(
         '/api/hotel/rooms/',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"},
+        headers={"Authorization": f"bearer {user_token}"},
         json={
             "room_number": "AP0001",
             "floor": 0,
@@ -231,9 +256,15 @@ def test_add_room_for_user():
 
 
 def test_get_rooms():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.get(
         '/api/hotel/rooms/',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+        headers={"Authorization": f"bearer {user_token}"}
     )
     
     data = response.json()
@@ -243,9 +274,15 @@ def test_get_rooms():
     
 
 def test_get_rooms_with_query_filters():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.get(
         '/api/hotel/rooms/?status=Available&floor=1',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+        headers={"Authorization": f"bearer {user_token}"}
     )
     
     data = response.json()
@@ -255,9 +292,15 @@ def test_get_rooms_with_query_filters():
     
 
 def test_get_rooms_with_all_query_filters():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.get(
         '/api/hotel/rooms/?room_number=AP1102&floor=1&number_of_bedrooms=2&occupancy_limit=4&status=Available',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+        headers={"Authorization": f"bearer {user_token}"}
     )
     
     data = response.json()
@@ -267,9 +310,15 @@ def test_get_rooms_with_all_query_filters():
     
     
 def test_update_room_price():
+    admin_token = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.put(
         '/api/hotel/rooms/AP1101',
-        headers={"Authorization": f"bearer {current_test_token_for_admin['token']}"},
+        headers={"Authorization": f"bearer {admin_token}"},
         json={"price": 20.00}
     )    
     data = response.json()
@@ -281,9 +330,15 @@ def test_update_room_price():
     
 
 def test_create_booking():
+    user_token = client.post(
+        '/token',
+        data={"username": "test@user.com", "password": "testuserpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.post(
         '/api/hotel/bookings/',
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"},
+        headers={"Authorization": f"bearer {user_token}"},
         json={
             "check_in_date": "2023-08-10",
             "check_out_date": "2023-08-15",
@@ -299,14 +354,31 @@ def test_create_booking():
     assert type(data['reference']) == str
     
     
-    current_booking['reference'] = data['reference']
+    # DELETE THE BOOKING CREATED IN THE DATABASE AND CHANGE THE ROOM STATUS
+    db = TestingSessionLocal()
+    
+    created_booking = db.query(models.Booking).filter(models.Booking.reference == data['reference']).first()
+    room = db.query(models.Room).filter(models.Room.id == 7).first()
+    
+    room.status = "available"
+    
+    db.delete(created_booking)
+    
+    db.commit()
+    db.close()
     
     
 
 def test_update_room():
+    admin_token = client.post(
+        '/token',
+        data={"username": "test@admin.com", "password": "testadminpassword", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    ).json()['access_token']
+    
     response = client.put(
-        f"/api/hotel/rooms/check-out/{current_booking['reference']}",
-        headers={"Authorization": f"bearer {current_test_token_for_user['token']}"}
+        f"/api/hotel/rooms/check-out/dummyreference",
+        headers={"Authorization": f"bearer {admin_token}"}
     )
     
     data = response.json()
@@ -315,9 +387,4 @@ def test_update_room():
     assert data['status'] == "available"
     
     
-    # DELETE THE BOOKING CREATED IN THE DATABASE
-    db = TestingSessionLocal()
-    created_booking = db.query(models.Booking).filter(models.Booking.reference == current_booking['reference']).first()
-    db.delete(created_booking)
-    db.commit()
-    db.close()
+    
